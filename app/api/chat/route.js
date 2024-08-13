@@ -22,50 +22,53 @@ Multilingual support: Be prepared to assist users in multiple languages if requi
 Remember, your primary goal is to ensure users have a smooth, informative, and positive experience with JashAI. Always strive to resolve issues efficiently and leave users feeling confident about using the platform for their software engineering interviews.`
 
 export async function POST(req) {
-    const openai = new OpenAI()
-    const data = await req.json()
-    // console.log({
-    //     model:"gpt-4o-mini",
-    //     stream: true,
-    //     messages:[
-    //         {"role": "system", "content": systemPrompt},
-    //         ...data,
-    //     ]
-    // })
+    try {
+        const openai = new OpenAI({
+            baseURL: "https://openrouter.ai/api/v1",
+            apiKey: process.env.OPENROUTER_API_KEY})
+        const data = await req.formData()
 
-    const completion = await openai.chat.completions.create({
-            model:"gpt-4o-mini",
-            stream: true,
-            messages:[
-                {"role": "system", "content": systemPrompt},
-                ...data,
-            ]
-    })
-    const stream = new ReadableStream({
-        async start(controller) {
-            const encoder = new TextEncoder()
-            // TEMP used to get the raw text from AI model
-            // let TEMP =''
-            try {
-                // loops through sections sent over by the chat bot
-                for await ( const chunk of completion){
-                    // const content = chunk.choices[0].message.parsed
-                    const content = chunk.choices[0]?.delta?.content
-                    if (content){
-                        const text = encoder.encode(content)
-                        // TEMP+=content
-                        controller.enqueue(text)
+        const uploadedFileContent = data.get('document')
+        const messages = JSON.parse(data.get('messages'))
+
+        //Adding User uploaded resume to system prompt
+        const enchancedSytemPrompt = systemPrompt+ "Please use the following user details to assist them with their training: "+ uploadedFileContent
+
+        const completion = await openai.chat.completions.create({
+                model: "google/gemma-2-9b-it:free",//"gpt-4o-mini",
+                stream: true,
+                messages:[
+                    {"role": "system", "content": enchancedSytemPrompt},
+                    ...messages,
+                ]
+        })
+        const stream = new ReadableStream({
+            async start(controller) {
+                const encoder = new TextEncoder()
+                try {
+                    // loops through sections sent over by the chat bot
+                    for await ( const chunk of completion){
+                        const content = chunk.choices[0]?.delta?.content
+                        if (content){
+                            const text = encoder.encode(content)
+                            // TEMP+=content
+                            controller.enqueue(text)
+                        }
                     }
+                } catch (err){
+                    controller.error(err)
+                } finally {
+                    
+                    controller.close()
                 }
-            } catch (err){
-                controller.error(err)
-            } finally {
-                
-                controller.close()
-            }
-            // console.log(TEMP)
-        },
-    })
-    
-    return new NextResponse(stream)
+            },
+        })
+        
+        return new NextResponse(stream)
+    } catch (error) {
+        console.error('Error in chat route:', error)
+        return NextResponse.json({
+            error:'Internal server error'
+        }, {status: 500})
+    }
 }

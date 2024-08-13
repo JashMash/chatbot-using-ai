@@ -1,16 +1,20 @@
 # Jashish's AI Chatbot for SWE interviewing help
-Project dedicated to learning integrations with AI models and using Node.JS, Open AI, and few other stacks.
+Software developer interview helper bot, which helps YOU in specific even more since we accept your resume as an input and will give you answers dedicated to your needs to be able to land that job!
+
+Project dedicated to learning integrations with AI models and using Node.JS, Open AI, AWS Bedrock, EC2, Render, Pinecone.
 
 ## Current features
+- Resume input which helps the bot be able help your work experience specific questions and any improvements you want to implement on your resume 
 - Acts as a bot to help you prepare for SWE interviews
+- Messages from the Model are encoded and decoded using TextEncoder and TextDecoder
 - Keeps history as long as page isnt refreshed
 - Screen is fixed size so that the scroll will only happen within the chat window
 - The output will be in markdown, does have issues with code blocks with long lines since they dont wrap
-- Uses the cheapest Open AI model - gpt-4o-mini
+- ~~Uses the gpt-4o-mini Open AI model - (Currently Cheapest)~~ Switched to [Gemma 2 9B since it is free found here](https://openrouter.ai/models/google/gemma-2-9b-it:free/api)
 
 
 ## Images for reference
-![alt text](./Images/AI_chatbot.png)
+![Resume Upload Functionality](./Images/image.png)
 
 
 ## Other Talking points
@@ -26,5 +30,5 @@ Steps to run this locally:
 1. Check if you have Node.js by running  "node -version" in your terminal
 2. Run "npm install" when the terminal is opened within this project/directory (/chatbot-using-ai)
 3. Create a ".env.local" file in the cloned directory 
-4. Within the ".env.local" file you will have to add your own API Key like this "OPENAI_API_KEY=abcd", which you can get from their website and it will need a balance of non zero. 
+4. Within the ".env.local" file you will have to add your own API Key like this ~~"OPENAI_API_KEY=abcd"~~ "OPENROUTER_API_KEY=sk-or", which you can get from their website and it will need a balance of non zero. 
 5. Run "npm run dev" and hope you have fun
